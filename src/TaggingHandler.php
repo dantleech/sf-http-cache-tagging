@@ -103,10 +103,6 @@ class TaggingHandler
 
         $tags = $this->decodeTags($request->headers->get($this->options['header_invalidate_tags']));
 
-        if (null === $tags) {
-            return;
-        }
-
         $this->manager->invalidateTags($tags);
 
         $response = new Response(sprintf('Tags processed: "%s"', implode('", "', $tags)));
@@ -152,12 +148,6 @@ class TaggingHandler
     private function invalidateTagsFromResponse(Response $response)
     {
         $tags = $this->decodeTags($response->headers->get($this->options['header_invalidate_tags']));
-
-        if (null === $tags) {
-            // could not decode the tags
-            return;
-        }
-
         $this->manager->invalidateTags($tags);
     }
 
@@ -203,13 +193,6 @@ class TaggingHandler
      */
     private function getTagsFromHeaders(HeaderBag $headers)
     {
-        if (!$headers->has($this->options['header_tags'])) {
-            throw new \RuntimeException(sprintf(
-                'Could not find tags header "%s"',
-                $this->options['header_tags']
-            ));
-        }
-
         $tagsRaw = $headers->get($this->options['header_tags']);
         $tags = $this->decodeTags($tagsRaw, true);
 
@@ -217,17 +200,15 @@ class TaggingHandler
     }
 
     /**
-     * Determine the cache lifetime time from the response headers.
+     * Decode the encoded tags using the given strategy or a callback.
      *
-     * If no lifetime can be inferred, then return NULL.
+     * @param string $encodedTags
      *
-     * @return int|null
+     * @throws \RuntimeException if tags cannot be decoded.
+     * @throws \InvalidArgumentException if given strategy is not known.
+     *
+     * @return string[]
      */
-    private function getExpiryFromResponse(Response $response)
-    {
-        return $response->getMaxAge();
-    }
-
     private function decodeTags($encodedTags)
     {
         if ($this->options['tag_encoding'] === 'json') {
@@ -252,6 +233,7 @@ class TaggingHandler
         }
 
         $validEncodings = ['json', 'comma-separated'];
+
         throw new \InvalidArgumentException(sprintf(
             'Invalid tag encoding option "%s". It must either be a callable or one of: "%s"',
             $this->options['tag_encoding'],

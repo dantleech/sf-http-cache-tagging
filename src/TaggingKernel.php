@@ -25,6 +25,16 @@ class TaggingKernel implements HttpKernelInterface, TerminableInterface
     private $kernel;
     private $handler;
 
+    /**
+     * Wrap the given kernel in with this TaggingKernel using the given
+     * TagManager implementation.
+     *
+     * The $options are passed directly to the TaggingHandler.
+     *
+     * @param HttpKernelInterface $kernel
+     * @param TagManagerInterface $options
+     * @param array $options
+     */
     public function __construct(HttpKernelInterface $kernel, TagManagerInterface $tagManager, $options = [])
     {
         $this->handler = new TaggingHandler($tagManager, null, $options);
@@ -47,8 +57,13 @@ class TaggingKernel implements HttpKernelInterface, TerminableInterface
         return $response;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function terminate(Request $request, Response $response)
     {
-        $this->kernel->terminate($request, $response);
+        if ($this->kernel instanceof TerminableInterface) {
+            $this->kernel->terminate($request, $response);
+        }
     }
 }
