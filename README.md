@@ -51,7 +51,7 @@ use DTL\Symfony\HttpCacheTagging\TaggingKernel;
 $app = new TestKernel();
 
 // the standard Symfony HTTP cache
-$store = new Store('/path/to/keep/keep/cache');
+$store = new Store('/path/to/keep/cache');
 $httpCache = new HttpCache($app, $store);
 
 // our tag storage strategy
