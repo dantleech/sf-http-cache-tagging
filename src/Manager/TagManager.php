@@ -66,7 +66,7 @@ class TagManager implements TagManagerInterface
      * Associate the given content digest with the given tags.
      *
      * NOTE: Often this method could simply be a proxy to
-     * StorageInterface#tagContentDigest.
+     *       StorageInterface#tagContentDigest.
      *
      * @param string[] $tags
      * @param string $contentDigest

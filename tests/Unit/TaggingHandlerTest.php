@@ -41,10 +41,26 @@ class TaggingHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * When the tags header is in the response It should call the tag manager
-     * to create tags.
+     * It should store tags from the Response.
      */
     public function testHandleTags()
+    {
+        $response = Response::create('test', 200, [
+            'X-Content-Digest' => '1234',
+            'X-Cache-Tags' => json_encode(['one', 'two']),
+        ]);
+
+        $this->tagManager->tagContentDigest(['one', 'two'], '1234')->shouldBeCalled();
+
+        $this->createHandler([])->handleResponse(
+            $response
+        );
+    }
+
+    /**
+     * It should throw an exception if the response headers do not contain the required header.
+     */
+    public function testHandleTagsResponseMissingHeader()
     {
         $response = Response::create('test', 200, [
             'X-Content-Digest' => '1234',
@@ -143,6 +159,19 @@ class TaggingHandlerTest extends \PHPUnit_Framework_TestCase
         $this->createHandler([])->handleRequest(
             $request
         );
+    }
+
+    /**
+     * It should not invalidate tags if the headers do not contain the configured tag invalidation header.
+     */
+    public function testInvalidateTagsRequestMissingTagsHeader()
+    {
+        $request = Request::create('', 'POST');
+
+        $response = $this->createHandler([])->handleRequest(
+            $request
+        );
+        $this->assertNull($response);
     }
 
     /**
